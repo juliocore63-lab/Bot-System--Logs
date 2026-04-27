@@ -18,6 +18,13 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(express.json());
 app.use(express.static("public"));
 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
+}));
+
 app.get("/", (req, res) => {
   if (req.session.user) {
     return res.redirect("/dashboard.html");
@@ -25,13 +32,6 @@ app.get("/", (req, res) => {
 
   res.redirect("/login.html");
 });
-
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
-}));
 
 // 🔐 LOGIN
 app.get("/login", (req, res) => {
