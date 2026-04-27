@@ -18,6 +18,14 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(express.json());
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/dashboard.html");
+  }
+
+  res.redirect("/login.html");
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
