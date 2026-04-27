@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Bot'System | Dashboard</title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -19,18 +21,19 @@
         </div>
 
         <nav class="menu">
-  <a class="menu-item active" onclick="irPara('dashboard', this)">📊 Dashboard</a>
-  <a class="menu-item" onclick="irPara('entradaArea', this)">📥 Entrada</a>
-  <a class="menu-item" onclick="irPara('saidaArea', this)">📤 Saída</a>
-  <a class="menu-item" onclick="irPara('logsArea', this)">🛡️ Logs</a>
-  <a class="menu-item" onclick="irPara('configArea', this)">⚙️ Configurações</a>
-</nav>
+          <a class="menu-item active" onclick="irPara('dashboard', this)">📊 Dashboard</a>
+          <a class="menu-item" onclick="irPara('entradaArea', this)">📥 Entrada</a>
+          <a class="menu-item" onclick="irPara('saidaArea', this)">📤 Saída</a>
+          <a class="menu-item" onclick="irPara('cargoArea', this)">👮 Cargo Automático</a>
+          <a class="menu-item" onclick="irPara('logsArea', this)">🛡️ Logs</a>
+          <a class="menu-item" onclick="irPara('configArea', this)">⚙️ Configurações</a>
+        </nav>
       </div>
 
       <div class="sidebar-card">
         <span class="badge">ONLINE</span>
         <h3>Sistema ativo</h3>
-        <p>Monitoramento profissional para seu servidor Discord.</p>
+        <p>Bot conectado e painel SaaS funcionando.</p>
       </div>
     </aside>
 
@@ -38,84 +41,88 @@
       <header class="topbar">
         <div>
           <h1>Central de Controle</h1>
-          <p>Configure logs, mensagens automáticas e canais do seu servidor.</p>
+          <p>Configure entrada, saída, logs e cargo automático do servidor.</p>
         </div>
 
         <div class="top-actions">
           <select id="guilds" class="guild-select">
-            <option>Carregando...</option>
+            <option>Carregando servidores...</option>
           </select>
 
-          <div class="user-pill">
-            <img id="avatar" />
-            <span id="username">Usuário</span>
-          </div>
-
-          <button class="btn-secondary" onclick="window.location.href='/logout'">Sair</button>
+          <button class="btn-secondary" onclick="window.location.href='/logout'">
+            Sair
+          </button>
         </div>
       </header>
 
       <section class="stats-grid" id="dashboard">
-  <div class="stat-card">
-    <div class="stat-icon green">📥</div>
-    <div>
-      <span>Entrada</span>
-      <strong id="entradaStatus">Não configurado</strong>
-    </div>
-  </div>
+        <div class="stat-card">
+          <div class="stat-icon green">📥</div>
+          <div>
+            <span>Entrada</span>
+            <strong id="entradaStatus">Não configurado</strong>
+          </div>
+        </div>
 
-  <div class="stat-card">
-    <div class="stat-icon red">📤</div>
-    <div>
-      <span>Saída</span>
-      <strong id="saidaStatus">Não configurado</strong>
-    </div>
-  </div>
+        <div class="stat-card">
+          <div class="stat-icon red">📤</div>
+          <div>
+            <span>Saída</span>
+            <strong id="saidaStatus">Não configurado</strong>
+          </div>
+        </div>
 
-  <div class="stat-card">
-    <div class="stat-icon blue">🛡️</div>
-    <div>
-      <span>Logs gerais</span>
-      <strong id="logsStatus">Não configurado</strong>
-    </div>
-  </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🛡️</div>
+          <div>
+            <span>Logs</span>
+            <strong id="logsStatus">Não configurado</strong>
+          </div>
+        </div>
 
-  <div class="stat-card">
-    <div class="stat-icon purple">⚡</div>
-    <div>
-      <span>Status</span>
-      <strong id="botStatus">Online</strong>
-    </div>
-  </div>
-</section>
+        <div class="stat-card">
+          <div class="stat-icon purple">👮</div>
+          <div>
+            <span>Cargo automático</span>
+            <strong id="cargoStatus">Não configurado</strong>
+          </div>
+        </div>
+      </section>
 
       <section class="panel-grid">
         <div class="panel large" id="configArea">
           <div class="panel-header">
             <div>
-              <h2>Configuração dos Canais</h2>
-              <p>Escolha os canais usados pelo bot.</p>
+              <h2>Configuração Principal</h2>
+              <p>Escolha os canais e o cargo que o bot vai usar.</p>
             </div>
-            <span class="pill">Configuração principal</span>
+
+            <span class="pill">SaaS Panel</span>
           </div>
 
           <div class="form-grid">
             <div class="field" id="entradaArea">
               <label>Canal de Entrada</label>
               <select id="entrada"></select>
-              <small>Onde será enviada a mensagem quando alguém entrar.</small>
+              <small>Mensagem enviada quando um membro entra.</small>
             </div>
 
             <div class="field" id="saidaArea">
               <label>Canal de Saída</label>
               <select id="saida"></select>
-              <small>Onde será enviada a mensagem quando alguém sair.</small>
+              <small>Mensagem enviada quando um membro sai.</small>
             </div>
 
             <div class="field">
               <label>Canal de Logs</label>
               <select id="logs"></select>
-              <small>Canal de auditoria para logs gerais.</small>
+              <small>Canal onde serão enviados os logs gerais.</small>
+            </div>
+
+            <div class="field" id="cargoArea">
+              <label>Cargo Automático ao Entrar</label>
+              <select id="cargoEntrada"></select>
+              <small>Esse cargo será adicionado automaticamente quando o membro entrar.</small>
             </div>
           </div>
 
@@ -124,7 +131,7 @@
           <div class="panel-header mini">
             <div>
               <h2>Mensagens Personalizadas</h2>
-              <p>Use: {user}, {userTag}, {userId}, {server}</p>
+              <p>Variáveis disponíveis: {user}, {userTag}, {server}</p>
             </div>
           </div>
 
@@ -141,7 +148,10 @@
           </div>
 
           <div class="actions">
-            <button class="btn-primary" onclick="salvar()">Salvar configurações</button>
+            <button class="btn-primary" onclick="salvar()">
+              Salvar configurações
+            </button>
+
             <span id="status"></span>
           </div>
         </div>
@@ -149,27 +159,43 @@
         <div class="panel" id="logsArea">
           <div class="panel-header">
             <div>
-              <h2>Logs Ativos</h2>
-              <p>Escolha o que será monitorado.</p>
+              <h2>Status do Sistema</h2>
+              <p>Resumo do funcionamento atual.</p>
             </div>
           </div>
 
-          <div class="toggle-list">
-            <label><input type="checkbox" id="logEntrada"> Entrada de membros</label>
-            <label><input type="checkbox" id="logSaida"> Saída de membros</label>
-            <label><input type="checkbox" id="logMensagemApagada"> Mensagem apagada</label>
-            <label><input type="checkbox" id="logMensagemEditada"> Mensagem editada</label>
-            <label><input type="checkbox" id="logCargoCriado"> Cargo criado</label>
-            <label><input type="checkbox" id="logCargoDeletado"> Cargo deletado</label>
-            <label><input type="checkbox" id="logCanalCriado"> Canal criado</label>
-            <label><input type="checkbox" id="logCanalDeletado"> Canal deletado</label>
+          <div class="health-list">
+            <div class="health-item">
+              <span class="dot online"></span>
+              Bot Discord
+              <strong>Online</strong>
+            </div>
+
+            <div class="health-item">
+              <span class="dot online"></span>
+              Painel Web
+              <strong>Ativo</strong>
+            </div>
+
+            <div class="health-item">
+              <span class="dot warning"></span>
+              Banco de Dados
+              <strong>MongoDB</strong>
+            </div>
+
+            <div class="health-item">
+              <span class="dot online"></span>
+              Cargo Automático
+              <strong>Configurável</strong>
+            </div>
           </div>
 
           <div class="preview-card">
-            <h3>Prévia do Embed</h3>
+            <h3>Prévia</h3>
+
             <div class="fake-embed">
               <strong>📥 Membro entrou</strong>
-              <p id="previewText">Bem-vindo(a), @usuário!</p>
+              <p id="previewText">Bem-vindo @usuário ao servidor.</p>
               <span>Bot'System • agora</span>
             </div>
           </div>

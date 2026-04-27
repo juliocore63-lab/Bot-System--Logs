@@ -1,201 +1,169 @@
 let guildId = null;
-let canaisCache = [];
 
-const ids = {
-  entrada: document.getElementById("entrada"),
-  saida: document.getElementById("saida"),
-  logs: document.getElementById("logs"),
-  mensagemEntrada: document.getElementById("mensagemEntrada"),
-  mensagemSaida: document.getElementById("mensagemSaida")
-};
+// ELEMENTOS
+const entrada = document.getElementById("entrada");
+const saida = document.getElementById("saida");
+const logs = document.getElementById("logs");
+const cargoEntrada = document.getElementById("cargoEntrada");
+const mensagemEntrada = document.getElementById("mensagemEntrada");
+const mensagemSaida = document.getElementById("mensagemSaida");
 
+// 🔐 API helper
 async function api(url, options = {}) {
   const res = await fetch(url, options);
+
   if (res.status === 401) {
     window.location.href = "/login.html";
     return null;
   }
-  return await res.json();
+
+  return res.json();
 }
 
-async function carregarUsuario() {
-  const user = await api("/api/me");
-  if (!user) return;
-
-  document.getElementById("username").innerText = user.username;
-
-  const avatar = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-    : "https://cdn.discordapp.com/embed/avatars/0.png";
-
-  document.getElementById("avatar").src = avatar;
-}
-
-async function carregarStatus() {
-  const status = await api("/api/status");
-  if (!status) return;
-
-  document.getElementById("botStatus").innerText = status.bot === "online" ? "Online" : "Offline";
-}
-
+// 🔽 CARREGAR SERVIDORES
 async function carregarGuilds() {
   const guilds = await api("/api/guilds");
   const select = document.getElementById("guilds");
+
   select.innerHTML = "";
 
-  if (!guilds || guilds.length === 0) {
-    select.innerHTML = `<option>Nenhum servidor disponível</option>`;
-    return;
-  }
-
   guilds.forEach(g => {
-    const option = document.createElement("option");
-    option.value = g.id;
-    option.textContent = g.name;
-    select.appendChild(option);
+    const opt = document.createElement("option");
+    opt.value = g.id;
+    opt.textContent = g.name;
+    select.appendChild(opt);
   });
 
-  guildId = guilds[0].id;
+  guildId = guilds[0]?.id;
   select.value = guildId;
 
-  await carregarCanais();
-  await carregarConfig();
+  await carregarTudo();
 
   select.onchange = async () => {
     guildId = select.value;
-    await carregarCanais();
-    await carregarConfig();
+    await carregarTudo();
   };
 }
 
-async function carregarCanais() {
-  if (!guildId) return;
-
-  const canais = await api(`/api/canais/${guildId}`);
-  canaisCache = canais || [];
-
-  preencherSelect(ids.entrada, canaisCache);
-  preencherSelect(ids.saida, canaisCache);
-  preencherSelect(ids.logs, canaisCache);
+// 🔄 CARREGAR TUDO
+async function carregarTudo() {
+  await carregarCanais();
+  await carregarCargos();
+  await carregarConfig();
 }
 
-function preencherSelect(select, canais) {
-  select.innerHTML = `<option value="">Não configurado</option>`;
+// 📺 CANAIS
+async function carregarCanais() {
+  const canais = await api(`/api/canais/${guildId}`);
 
-  canais.forEach(c => {
-    const option = document.createElement("option");
-    option.value = c.id;
-    option.textContent = `# ${c.nome}`;
-    select.appendChild(option);
+  preencherSelect(entrada, canais);
+  preencherSelect(saida, canais);
+  preencherSelect(logs, canais);
+}
+
+// 👮 CARGOS
+async function carregarCargos() {
+  const cargos = await api(`/api/cargos/${guildId}`);
+
+  cargoEntrada.innerHTML = `<option value="">Nenhum</option>`;
+
+  cargos.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.nome;
+    cargoEntrada.appendChild(opt);
   });
 }
 
-async function carregarConfig() {
-  if (!guildId) return;
+// 📌 PREENCHER SELECT
+function preencherSelect(select, lista) {
+  select.innerHTML = `<option value="">Nenhum</option>`;
 
+  lista.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.id;
+    opt.textContent = `# ${item.nome}`;
+    select.appendChild(opt);
+  });
+}
+
+// ⚙ CARREGAR CONFIG
+async function carregarConfig() {
   const config = await api(`/api/config/${guildId}`) || {};
 
-  ids.entrada.value = config.entrada || "";
-  ids.saida.value = config.saida || "";
-  ids.logs.value = config.logs || "";
-  ids.mensagemEntrada.value = config.mensagemEntrada || "Bem-vindo(a), {user}! Você entrou em **{server}**.";
-  ids.mensagemSaida.value = config.mensagemSaida || "{userTag} saiu do servidor.";
+  entrada.value = config.entrada || "";
+  saida.value = config.saida || "";
+  logs.value = config.logs || "";
+  cargoEntrada.value = config.cargoEntrada || "";
 
-  const logsAtivos = config.logsAtivos || {};
-  document.getElementById("logEntrada").checked = logsAtivos.entrada ?? true;
-  document.getElementById("logSaida").checked = logsAtivos.saida ?? true;
-  document.getElementById("logMensagemApagada").checked = logsAtivos.mensagemApagada ?? true;
-  document.getElementById("logMensagemEditada").checked = logsAtivos.mensagemEditada ?? true;
-  document.getElementById("logCargoCriado").checked = logsAtivos.cargoCriado ?? true;
-  document.getElementById("logCargoDeletado").checked = logsAtivos.cargoDeletado ?? true;
-  document.getElementById("logCanalCriado").checked = logsAtivos.canalCriado ?? true;
-  document.getElementById("logCanalDeletado").checked = logsAtivos.canalDeletado ?? true;
+  mensagemEntrada.value = config.mensagemEntrada || "Bem-vindo {user}";
+  mensagemSaida.value = config.mensagemSaida || "{userTag} saiu";
 
-  atualizarStatusUI(config);
+  atualizarStatus(config);
   atualizarPreview();
 }
 
-function getNomeCanal(id) {
-  const canal = canaisCache.find(c => c.id === id);
-  return canal ? `# ${canal.nome}` : "Não configurado";
+// 🔄 STATUS
+function atualizarStatus(config) {
+  document.getElementById("entradaStatus").innerText = config.entrada ? "Configurado" : "Não configurado";
+  document.getElementById("saidaStatus").innerText = config.saida ? "Configurado" : "Não configurado";
+  document.getElementById("logsStatus").innerText = config.logs ? "Configurado" : "Não configurado";
+  document.getElementById("cargoStatus").innerText = config.cargoEntrada ? "Configurado" : "Não configurado";
 }
 
-function atualizarStatusUI(config) {
-  document.getElementById("entradaStatus").innerText = getNomeCanal(config.entrada);
-  document.getElementById("saidaStatus").innerText = getNomeCanal(config.saida);
-  document.getElementById("logsStatus").innerText = getNomeCanal(config.logs);
-}
-
-function coletarLogsAtivos() {
-  return {
-    entrada: document.getElementById("logEntrada").checked,
-    saida: document.getElementById("logSaida").checked,
-    mensagemApagada: document.getElementById("logMensagemApagada").checked,
-    mensagemEditada: document.getElementById("logMensagemEditada").checked,
-    cargoCriado: document.getElementById("logCargoCriado").checked,
-    cargoDeletado: document.getElementById("logCargoDeletado").checked,
-    canalCriado: document.getElementById("logCanalCriado").checked,
-    canalDeletado: document.getElementById("logCanalDeletado").checked
-  };
-}
-
+// 💾 SALVAR
 async function salvar() {
-  if (!guildId) return;
-
   const btn = document.querySelector(".btn-primary");
-  btn.disabled = true;
+
   btn.innerText = "Salvando...";
+  btn.disabled = true;
 
-  const data = {
-    entrada: ids.entrada.value,
-    saida: ids.saida.value,
-    logs: ids.logs.value,
-    mensagemEntrada: ids.mensagemEntrada.value,
-    mensagemSaida: ids.mensagemSaida.value,
-    logsAtivos: coletarLogsAtivos()
-  };
-
-  const result = await api(`/api/config/${guildId}`, {
+  await api(`/api/config/${guildId}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      entrada: entrada.value,
+      saida: saida.value,
+      logs: logs.value,
+      cargoEntrada: cargoEntrada.value,
+      mensagemEntrada: mensagemEntrada.value,
+      mensagemSaida: mensagemSaida.value
+    })
   });
 
-  if (result?.ok) {
-    atualizarStatusUI(data);
-    document.getElementById("status").innerText = "✔ Configurações salvas!";
-    setTimeout(() => document.getElementById("status").innerText = "", 3000);
-  }
+  document.getElementById("status").innerText = "✔ Salvo com sucesso";
 
-  btn.disabled = false;
+  setTimeout(() => {
+    document.getElementById("status").innerText = "";
+  }, 3000);
+
   btn.innerText = "Salvar configurações";
+  btn.disabled = false;
 }
 
+// 🎨 PREVIEW
 function atualizarPreview() {
-  const texto = ids.mensagemEntrada.value
-    .replaceAll("{user}", "@usuário")
-    .replaceAll("{userTag}", "Usuario#0000")
-    .replaceAll("{userId}", "123456789")
-    .replaceAll("{server}", "Seu Servidor");
+  const texto = mensagemEntrada.value
+    .replace("{user}", "@usuario")
+    .replace("{userTag}", "usuario#0000")
+    .replace("{server}", "Servidor");
 
   document.getElementById("previewText").innerText = texto;
 }
 
-ids.mensagemEntrada.addEventListener("input", atualizarPreview);
+mensagemEntrada.addEventListener("input", atualizarPreview);
 
-carregarUsuario();
-carregarStatus();
-carregarGuilds();
-
-function irPara(id, elemento) {
+// 🔽 MENU
+function irPara(id, el) {
   document.getElementById(id)?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
+    behavior: "smooth"
   });
 
-  document.querySelectorAll(".menu-item").forEach(item => {
-    item.classList.remove("active");
-  });
-
-  elemento.classList.add("active");
+  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+  el.classList.add("active");
 }
+
+// 🚀 START
+carregarGuilds();
