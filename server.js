@@ -26,10 +26,6 @@ app.use(session({
 }));
 
 app.get("/", (req, res) => {
-  if (req.session.user) {
-    return res.redirect("/dashboard.html");
-  }
-
   res.redirect("/login.html");
 });
 
